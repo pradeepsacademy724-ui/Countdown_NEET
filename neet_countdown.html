@@ -164,16 +164,36 @@
   }
   .quote.show{ opacity:1; }
 
+  .sync-msg{
+    display:none;
+    align-items:center; justify-content:center;
+    font-size:2.2vmin; letter-spacing:0.08em;
+    color: var(--ink-dim);
+    font-style: italic;
+    padding: 3vmin 0;
+  }
+  .sync-msg.show{ display:flex; }
+  .countdown.small ~ .sync-msg, .sync-msg.small{
+    font-size:1.6vmin; padding:1.5vmin 0;
+  }
+
   .secondary{
-    margin-top:3.2vmin;
+    margin-top:4vmin;
     display:flex; flex-direction:column; align-items:center;
   }
   .secondary-title{
-    font-size:1.5vmin; letter-spacing:0.28em; text-transform:uppercase;
-    color: var(--ink-dim); margin-bottom:1.4vmin;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size:3.6vmin; letter-spacing:0.28em; text-transform:uppercase;
+    font-weight:400;
+    color: var(--accent);
+    margin-bottom:1vmin;
   }
   .secondary-title .tentative{
-    font-style:italic; opacity:0.75; letter-spacing:0.05em; text-transform:none;
+    display:block;
+    font-family: system-ui, sans-serif;
+    font-size:1.4vmin; letter-spacing:0.08em; text-transform:none;
+    font-style:italic; opacity:0.7; color: var(--ink-dim);
+    margin-top:0.8vmin;
   }
   .countdown.small{ gap:2.2vmin; }
   .countdown.small .digit{
@@ -219,12 +239,14 @@
     <div class="subline">counting down to exam day</div>
 
     <div class="countdown" id="countdown"></div>
+    <div class="sync-msg" id="countdown-sync">⏳ Syncing time with the internet…</div>
 
     <div class="target">Tentative date <b>02 May 2027</b> · official date awaited from NTA</div>
 
     <div class="secondary">
       <div class="secondary-title">JEE Main 2027 · Session 1 <span class="tentative">(tentative — Jan 2027, official date awaited)</span></div>
       <div class="countdown small" id="countdown2"></div>
+      <div class="sync-msg small" id="countdown2-sync">⏳ Syncing time…</div>
     </div>
 
     <div class="quote" id="quote"></div>
@@ -241,6 +263,12 @@
   // Tentative — JEE Main 2027 Session 1 usually falls in the last week of January.
   // Update once NTA releases the official information bulletin.
   const TARGET_DATE_2 = new Date("2027-01-24T09:00:00+05:30");
+
+  // Safety range for the TV/device clock. If the device's system time falls
+  // outside this window (common right after a power cycle, before it syncs
+  // with the internet), we show "Syncing time…" instead of a wrong countdown.
+  const CLOCK_MIN_VALID = new Date("2026-06-01T00:00:00+05:30");
+  const CLOCK_MAX_VALID = new Date("2027-12-31T23:59:59+05:30");
 
   const QUOTES = [
     "Every solved numerical is one less surprise on exam day.",
@@ -354,8 +382,21 @@
     root.appendChild(buildSep());
     root.appendChild(buildUnit("secs","seconds",2));
 
+    const syncMsg = document.getElementById(rootId + "-sync");
+
     function tick(){
       const now = new Date();
+
+      // Clock sanity check — guards against a wrong system date right after
+      // an Android TV power cycle (before it re-syncs time over the internet).
+      if(now < CLOCK_MIN_VALID || now > CLOCK_MAX_VALID){
+        root.style.display = "none";
+        if(syncMsg) syncMsg.classList.add("show");
+        return;
+      }
+      if(syncMsg) syncMsg.classList.remove("show");
+      root.style.display = "";
+
       let diff = targetDate - now;
       if(diff <= 0){
         if(opts.onComplete) opts.onComplete();
