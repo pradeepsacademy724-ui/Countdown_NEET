@@ -47,8 +47,8 @@
   }
 
   .logo{
-    position:absolute; top:4.5vmin; left:50%; transform:translateX(-50%);
-    height: 8.5vmin;
+    position:absolute; top:3.5vmin; left:50%; transform:translateX(-50%);
+    height: 15vmin;
     filter: drop-shadow(0 0.5vmin 0.8vmin rgba(74,59,107,0.18));
   }
 
@@ -60,7 +60,7 @@
     color: var(--ink);
     text-transform:uppercase;
     padding-left:0.5em;
-    margin-top: 6vmin;
+    margin-top: 12vmin;
     margin-bottom: 0.8vmin;
   }
   .headline b{
@@ -81,33 +81,29 @@
 
   .countdown{
     display:flex; align-items:flex-end; justify-content:center;
-    gap: 3.8vmin;
+    gap: 4.5vmin;
   }
   .unit{ display:flex; flex-direction:column; align-items:center; }
-  .digits{ display:flex; gap:1vmin; }
+  .digits{ display:flex; gap:0.8vmin; }
 
-  .digit-grid{
-    display:grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(7, 1fr);
-    gap: 0.5vmin;
-    width: 5.2vmin;
-    height: 7.2vmin;
-  }
-  .bubble{
-    border-radius:50%;
-    border: 1.8px solid var(--bubble-border);
+  .digit{
+    display:flex; align-items:center; justify-content:center;
+    min-width: 9vmin;
+    height: 15vmin;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight:700;
+    font-size:12vmin;
+    line-height:1;
+    color: var(--ink);
     background: var(--bubble-empty-bg);
-  }
-  .bubble.on{
-    background: var(--accent);
-    border-color: var(--accent);
-    box-shadow: 0 0 0.7vmin var(--accent-glow);
+    border: 2px solid var(--bubble-border);
+    border-radius: 1.6vmin;
+    box-shadow: 0 0.6vmin 1.2vmin rgba(74,59,107,0.12);
   }
 
   .unit-label{
-    margin-top:2vmin;
-    font-size:1.45vmin;
+    margin-top:2.4vmin;
+    font-size:2vmin;
     letter-spacing:0.35em;
     text-transform:uppercase;
     color: var(--ink-dim);
@@ -115,12 +111,12 @@
 
   .sep{
     align-self:center;
-    display:flex; flex-direction:column; gap:1.1vmin;
-    margin-bottom: 2.8vmin;
+    display:flex; flex-direction:column; gap:1.6vmin;
+    margin-bottom: 6vmin;
     opacity:0.55;
   }
   .sep span{
-    width:0.9vmin; height:0.9vmin; border-radius:50%;
+    width:1.3vmin; height:1.3vmin; border-radius:50%;
     background: var(--ink-faint);
   }
 
@@ -157,15 +153,37 @@
   }
 
   .quote{
-    position:absolute; bottom:9.5vmin; left:50%; transform:translateX(-50%);
-    font-size:1.75vmin; letter-spacing:0.05em;
+    position:absolute; bottom:8.5vmin; left:50%; transform:translateX(-50%);
+    font-size:2.6vmin; letter-spacing:0.03em; line-height:1.4;
     color: var(--ink-dim);
-    max-width:70vw;
+    max-width:76vw;
     opacity:0;
     transition: opacity 1.2s ease;
     font-style: italic;
+    text-align:center;
   }
   .quote.show{ opacity:1; }
+
+  .secondary{
+    margin-top:3.2vmin;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .secondary-title{
+    font-size:1.5vmin; letter-spacing:0.28em; text-transform:uppercase;
+    color: var(--ink-dim); margin-bottom:1.4vmin;
+  }
+  .secondary-title .tentative{
+    font-style:italic; opacity:0.75; letter-spacing:0.05em; text-transform:none;
+  }
+  .countdown.small{ gap:2.2vmin; }
+  .countdown.small .digit{
+    min-width:4.6vmin; height:6.6vmin; font-size:5vmin; border-radius:0.9vmin;
+  }
+  .countdown.small .unit-label{
+    margin-top:1.2vmin; font-size:1.15vmin; letter-spacing:0.28em;
+  }
+  .countdown.small .sep{ gap:0.8vmin; margin-bottom:2.6vmin; }
+  .countdown.small .sep span{ width:0.7vmin; height:0.7vmin; }
 
   .footer{
     position:absolute; bottom:2.8vmin; left:50%; transform:translateX(-50%);
@@ -204,9 +222,9 @@
 
     <div class="target">Tentative date <b>02 May 2027</b> · official date awaited from NTA</div>
 
-    <div class="progress-wrap">
-      <div class="progress-label"><span>Prep sheet</span><span id="progressPct">0% filled</span></div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="secondary">
+      <div class="secondary-title">JEE Main 2027 · Session 1 <span class="tentative">(tentative — Jan 2027, official date awaited)</span></div>
+      <div class="countdown small" id="countdown2"></div>
     </div>
 
     <div class="quote" id="quote"></div>
@@ -220,7 +238,9 @@
   // ---- configuration ----
   // Update TARGET_DATE once NTA announces the official NEET 2027 date.
   const TARGET_DATE = new Date("2027-05-02T09:00:00+05:30");
-  const PREP_START_DATE = new Date("2026-08-14T00:00:00+05:30");
+  // Tentative — JEE Main 2027 Session 1 usually falls in the last week of January.
+  // Update once NTA releases the official information bulletin.
+  const TARGET_DATE_2 = new Date("2027-01-24T09:00:00+05:30");
 
   const QUOTES = [
     "Every solved numerical is one less surprise on exam day.",
@@ -228,118 +248,141 @@
     "Aaj ka ek revision, exam din ka ek confident answer.",
     "The syllabus doesn't get shorter — your grip on it gets stronger.",
     "Mistakes in a mock test are cheaper than mistakes on 2 May.",
-    "Consistency beats intensity. Show up for today's chapter."
+    "Consistency beats intensity. Show up for today's chapter.",
+    "You don't need a perfect day. You need one more focused hour.",
+    "NCERT lines aaj padho, exam mein wahi lines marks banayengi.",
+    "The topper isn't smarter — they just didn't skip the boring chapters.",
+    "Doubt today, clarity tomorrow. Never carry a doubt past sunset.",
+    "Revision is not going back — it's locking in what you already earned.",
+    "Har mock test ek free lesson hai — usse seekho, usse dro mat.",
+    "Small steady effort beats one heroic night before the exam.",
+    "Your competition is not the topper — it's yesterday's version of you.",
+    "Formulae fade with sleep loss. Rest is part of the syllabus too.",
+    "One difficult chapter mastered is worth ten easy ones skimmed.",
+    "Galtiyan chhupao mat, unhi mein agla sawal chhupa hota hai.",
+    "The NEET syllabus rewards depth, not speed alone — go slow to go fast.",
+    "You are not behind. You are exactly where consistent effort has placed you.",
+    "Physics numericals reward calm hands more than clever shortcuts.",
+    "Har din ek chhota target — bade sapne yun hi poore hote hain.",
+    "Confidence on exam day is built quietly, months before it.",
+    "A revised weak topic is more valuable than a re-revised strong one.",
+    "Don't fear the syllabus. Break it into pieces small enough to finish today.",
+    "Practice questions you get wrong are the real syllabus for tomorrow.",
+    "Aaram zaroori hai, lekin discipline usse bhi zaroori hai.",
+    "The exam only tests what you practiced — so practice like it's exam day.",
+    "Every diagram you draw by hand sticks longer than one you only read.",
+    "Focus beats duration. Two focused hours beat five distracted ones.",
+    "Mistakes on a mock test today save marks on 2 May.",
+    "Jo aaj mushkil lagta hai, wahi kal ka sabse aasan chapter banega.",
+    "Success in NEET is a thousand small disciplined choices, not one big one.",
+    "Don't compare chapters completed — compare concepts truly understood.",
+    "The best revision is teaching the concept to yourself out loud.",
+    "Speed comes after accuracy — never the other way around.",
+    "Ek acha mock test result nahi, ek acha analysis matter karta hai.",
+    "You built this far with discipline. Trust it on exam day too.",
+    "Chemistry rewards memory with logic — build the logic first.",
+    "Every early morning study hour compounds more than a late night cram.",
+    "Botany aur Zoology mein diagrams hi asli marks dilate hain.",
+    "The goal isn't perfection today — it's progress you can measure.",
+    "Read the question twice. Most silly mistakes hide in the first reading.",
+    "Rest days aren't lost days — they're what make the next week possible.",
+    "Aapka target sirf ek number nahi, ek habit hai jo roz banti hai.",
+    "The syllabus is long, but your daily effort only needs to be honest.",
+    "Every formula you derive yourself, you'll never truly forget.",
+    "Don't wait to feel ready — start, and readiness follows the work.",
+    "Jo topic dar lagta hai, usi topic ko sabse pehle padho.",
+    "Your notes today are your fastest revision six months from now.",
+    "Discipline is choosing between what you want now and what you want most.",
+    "Exam hall mein sirf wahi kaam aayega jo aapne khud practice kiya.",
+    "Stay consistent even on the days motivation doesn't show up.",
+    "The last hour of study matters as much as the first — don't rush it.",
+    "Progress hides in the boring, repetitive days — trust the process.",
+    "Jitna clear concept hoga, utna hi confident aap paper mein honge."
   ];
 
-  const FONT = {
-    "0":["01110","10001","10011","10101","11001","10001","01110"],
-    "1":["00100","01100","00100","00100","00100","00100","01110"],
-    "2":["01110","10001","00001","00010","00100","01000","11111"],
-    "3":["11111","00010","00100","00010","00001","10001","01110"],
-    "4":["00010","00110","01010","10010","11111","00010","00010"],
-    "5":["11111","10000","11110","00001","00001","10001","01110"],
-    "6":["00110","01000","10000","11110","10001","10001","01110"],
-    "7":["11111","00001","00010","00100","01000","01000","01000"],
-    "8":["01110","10001","10001","01110","10001","10001","01110"],
-    "9":["01110","10001","10001","01111","00001","00010","01100"]
-  };
+  function buildCountdown(rootId, targetDate, opts){
+    opts = opts || {};
+    const root = document.getElementById(rootId);
+    const prefix = rootId + "-";
 
-  const countdownEl = document.getElementById("countdown");
-
-  function makeDigitGrid(d){
-    const grid = document.createElement("div");
-    grid.className = "digit-grid";
-    const pattern = FONT[d];
-    pattern.forEach(row=>{
-      [...row].forEach(bit=>{
-        const b = document.createElement("div");
-        b.className = "bubble" + (bit==="1" ? " on" : "");
-        grid.appendChild(b);
-      });
-    });
-    return grid;
-  }
-
-  function buildUnit(id, label, digitCount){
-    const unit = document.createElement("div");
-    unit.className = "unit";
-    const digitsWrap = document.createElement("div");
-    digitsWrap.className = "digits";
-    digitsWrap.id = "digits-" + id;
-    for(let i=0;i<digitCount;i++){
-      digitsWrap.appendChild(makeDigitGrid("0"));
+    function makeDigit(d){
+      const box = document.createElement("div");
+      box.className = "digit";
+      box.textContent = d;
+      return box;
     }
-    const lbl = document.createElement("div");
-    lbl.className = "unit-label";
-    lbl.textContent = label;
-    unit.appendChild(digitsWrap);
-    unit.appendChild(lbl);
-    return unit;
+    function buildUnit(id, label, digitCount){
+      const unit = document.createElement("div");
+      unit.className = "unit";
+      const digitsWrap = document.createElement("div");
+      digitsWrap.className = "digits";
+      digitsWrap.id = "digits-" + prefix + id;
+      for(let i=0;i<digitCount;i++){
+        digitsWrap.appendChild(makeDigit("0"));
+      }
+      const lbl = document.createElement("div");
+      lbl.className = "unit-label";
+      lbl.textContent = label;
+      unit.appendChild(digitsWrap);
+      unit.appendChild(lbl);
+      return unit;
+    }
+    function buildSep(){
+      const s = document.createElement("div");
+      s.className = "sep";
+      s.innerHTML = "<span></span><span></span>";
+      return s;
+    }
+
+    const lastValues = {};
+    function renderUnit(id, valueStr){
+      const key = prefix + id;
+      if(lastValues[key] === valueStr) return;
+      lastValues[key] = valueStr;
+      const wrap = document.getElementById("digits-" + key);
+      const needed = valueStr.length;
+      while(wrap.children.length < needed) wrap.insertBefore(makeDigit("0"), wrap.firstChild);
+      while(wrap.children.length > needed) wrap.removeChild(wrap.firstChild);
+      [...valueStr].forEach((ch, i)=>{ wrap.children[i].textContent = ch; });
+    }
+
+    root.appendChild(buildUnit("days","days",3));
+    root.appendChild(buildSep());
+    root.appendChild(buildUnit("hours","hours",2));
+    root.appendChild(buildSep());
+    root.appendChild(buildUnit("mins","minutes",2));
+    root.appendChild(buildSep());
+    root.appendChild(buildUnit("secs","seconds",2));
+
+    function tick(){
+      const now = new Date();
+      let diff = targetDate - now;
+      if(diff <= 0){
+        if(opts.onComplete) opts.onComplete();
+        root.style.display = "none";
+        return;
+      }
+      const totalSeconds = Math.floor(diff/1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      const secs = totalSeconds % 60;
+      renderUnit("days", String(days).padStart(3,"0"));
+      renderUnit("hours", String(hours).padStart(2,"0"));
+      renderUnit("mins", String(mins).padStart(2,"0"));
+      renderUnit("secs", String(secs).padStart(2,"0"));
+    }
+    tick();
+    setInterval(tick, 1000);
   }
 
-  function buildSep(){
-    const s = document.createElement("div");
-    s.className = "sep";
-    s.innerHTML = "<span></span><span></span>";
-    return s;
-  }
-
-  let lastValues = {};
-
-  function renderUnit(id, valueStr){
-    if(lastValues[id] === valueStr) return;
-    lastValues[id] = valueStr;
-    const wrap = document.getElementById("digits-" + id);
-    const needed = valueStr.length;
-    while(wrap.children.length < needed) wrap.insertBefore(makeDigitGrid("0"), wrap.firstChild);
-    while(wrap.children.length > needed) wrap.removeChild(wrap.firstChild);
-    [...valueStr].forEach((ch, i)=>{
-      const newGrid = makeDigitGrid(ch);
-      wrap.replaceChild(newGrid, wrap.children[i]);
-    });
-  }
-
-  function init(){
-    countdownEl.appendChild(buildUnit("days","days",3));
-    countdownEl.appendChild(buildSep());
-    countdownEl.appendChild(buildUnit("hours","hours",2));
-    countdownEl.appendChild(buildSep());
-    countdownEl.appendChild(buildUnit("mins","minutes",2));
-    countdownEl.appendChild(buildSep());
-    countdownEl.appendChild(buildUnit("secs","seconds",2));
-  }
-  init();
-
-  function tick(){
-    const now = new Date();
-    let diff = TARGET_DATE - now;
-
-    if(diff <= 0){
+  buildCountdown("countdown", TARGET_DATE, {
+    onComplete: function(){
       document.querySelector(".headline").innerHTML = 'NEET <b>2027</b> — All the best!';
       document.querySelector(".subline").textContent = "go show them what the last few months built";
-      countdownEl.style.display = "none";
-      return;
     }
-
-    const totalSeconds = Math.floor(diff/1000);
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-
-    renderUnit("days", String(days).padStart(3,"0"));
-    renderUnit("hours", String(hours).padStart(2,"0"));
-    renderUnit("mins", String(mins).padStart(2,"0"));
-    renderUnit("secs", String(secs).padStart(2,"0"));
-
-    const totalPrepSpan = TARGET_DATE - PREP_START_DATE;
-    const elapsed = now - PREP_START_DATE;
-    const pct = Math.max(0, Math.min(100, (elapsed/totalPrepSpan)*100));
-    document.getElementById("progressFill").style.width = pct.toFixed(1) + "%";
-    document.getElementById("progressPct").textContent = pct.toFixed(0) + "% filled";
-  }
-  tick();
-  setInterval(tick, 1000);
+  });
+  buildCountdown("countdown2", TARGET_DATE_2);
 
   const quoteEl = document.getElementById("quote");
   let qIndex = 0;
@@ -352,7 +395,7 @@
     }, 400);
   }
   showQuote();
-  setInterval(showQuote, 9000);
+  setInterval(showQuote, 11000);
 
   const fsHint = document.getElementById("fsHint");
   function goFullscreen(){
